@@ -1,3 +1,5 @@
+from time import time
+
 import matplotlib.pyplot as plt
 from random import randint
 
@@ -14,6 +16,7 @@ class Maze(Environment):
         self.__height = height
 
         self.__graph: Graph = None
+        self.__paths: Graph = None
 
         self.__initial_point = None
         self.__final_point = None
@@ -23,6 +26,7 @@ class Maze(Environment):
         self.__agent_position = None
 
         self.__counter = 0
+        self.__last_distance = None
         self.__step_limit = step_limit
 
         fig = plt.gca()
@@ -36,14 +40,18 @@ class Maze(Environment):
     def reset(self):
         self.__counter = 0
         self.__graph = generate_maze(self.__width, self.__height)
+        self.__paths = self.__graph.grid_complement(self.__width, self.__height)
 
         self.__initial_point = randint(0, self.__height - 1)
         self.__final_point = randint(0, self.__height - 1)
 
         self.__agent_position = (1, self.__initial_point + 1)
+        self.__last_distance = self.distance()
 
         self.__image = MazeMonitor(self.__width, self.__height, self.__graph, self.__initial_point, self.__final_point)
         self.__image.build()
+
+        self.__graph.show()
 
         return self.__image.image
 
@@ -74,7 +82,8 @@ class Maze(Environment):
 
         if self.__counter < self.__step_limit:
             if not self.__graph.is_adjacent(new_pos, self.__agent_position) and self.__is_valid(new_pos):
-
+                self.__agent_position = new_pos
+                new_distance = self.distance()
                 self.__image.move_agent((new_pos[0] - 1, new_pos[1] - 1))
                 # print(new_pos, self.__agent_position)
                 if new_pos == (self.__width, self.__final_point + 1):
@@ -82,9 +91,9 @@ class Maze(Environment):
                     done = True
                     message = "Agent successfully exited the maze! :)"
                 else:
-                    reward = -1
+                    reward = self.__last_distance - new_distance
 
-                self.__agent_position = new_pos
+                self.__last_distance = new_distance
             else:
                 reward = -2
         else:
@@ -99,7 +108,14 @@ class Maze(Environment):
 
     def render(self):
         plt.imshow(self.__image.image)
-        plt.pause(0.01)
+        plt.pause(0.001)
+
+    def distance(self):
+        return self.__paths.BFS(self.__agent_position, (self.__width, self.__final_point + 1))
+
+    @property
+    def agent_position(self):
+        return self.__agent_position
 
     @property
     def image(self):
