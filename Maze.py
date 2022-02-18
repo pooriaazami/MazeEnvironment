@@ -26,7 +26,7 @@ class Maze(Environment):
         self.__agent_position = None
 
         self.__counter = 0
-        self.__last_distance = None
+        # self.__last_distance = None
         self.__step_limit = step_limit
 
         fig = plt.gca()
@@ -46,24 +46,24 @@ class Maze(Environment):
         self.__final_point = randint(0, self.__height - 1)
 
         self.__agent_position = (1, self.__initial_point + 1)
-        self.__last_distance = self.distance()
+        # self.__last_distance = self.distance()
 
         self.__image = MazeMonitor(self.__width, self.__height, self.__graph, self.__initial_point, self.__final_point)
         self.__image.build()
 
-        self.__graph.show()
+        # self.__graph.show()
 
         return self.__image.image
 
     def __decode_action(self, action):
         x, y = self.__agent_position
-        if action == 1:  # up
+        if action == 0:  # up
             y -= 1
-        elif action == 2:  # down
+        elif action == 1:  # down
             y += 1
-        elif action == 3:  # left
+        elif action == 2:  # left
             x -= 1
-        elif action == 4:  # right
+        elif action == 3:  # right
             x += 1
 
         return x, y
@@ -80,10 +80,10 @@ class Maze(Environment):
         done = False
         message = None
 
-        if self.__counter < self.__step_limit:
+        if self.__counter < self.__step_limit or self.__step_limit == 0:
             if not self.__graph.is_adjacent(new_pos, self.__agent_position) and self.__is_valid(new_pos):
                 self.__agent_position = new_pos
-                new_distance = self.distance()
+                # new_distance = self.distance()
                 self.__image.move_agent((new_pos[0] - 1, new_pos[1] - 1))
                 # print(new_pos, self.__agent_position)
                 if new_pos == (self.__width, self.__final_point + 1):
@@ -91,9 +91,10 @@ class Maze(Environment):
                     done = True
                     message = "Agent successfully exited the maze! :)"
                 else:
-                    reward = self.__last_distance - new_distance
+                    # reward = self.__last_distance - new_distance
+                    reward = -1
 
-                self.__last_distance = new_distance
+                # self.__last_distance = new_distance
             else:
                 reward = -2
         else:

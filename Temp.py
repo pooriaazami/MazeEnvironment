@@ -1,26 +1,33 @@
 from random import randint
 from time import time
 
+from tqdm import tqdm
+
 import matplotlib.pyplot as plt
 
 from Maze import Maze
 
-maze = Maze(20, 20, step_limit=20)
+maze = Maze(20, 20, step_limit=1000000)
 image, done = maze.reset(), False
 
 tic = time()
 
-while not done:
-    maze.render()
-    # print(maze.agent_position)
-    action = randint(1, 4)
-    # print(action)
-    reward, observation, done, message = maze.step(action)
+avg = 0
 
-    print(reward)
+for _ in tqdm(range(100)):
+    counter = 0
+    done = False
+    while not done:
+        # maze.render()
+        # print(maze.agent_position)
+        action = randint(1, 4)
+        # print(action)
+        reward, observation, done, message = maze.step(action)
+        counter += 1
+    maze.reset()
+    avg += counter
+    print(counter)
 
-toc = time()
-
-print(toc - tic)
-
+    # print(reward)
+print(avg / 100)
 print(message)
