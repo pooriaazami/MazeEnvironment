@@ -21,15 +21,15 @@ class Graph:
         self.__edge_count += 1
 
     def remove_edge(self, first, second):
-        self.__adjacency_list[first].remove(second)
-        self.__adjacency_list[second].remove(first)
+        if first in self.__adjacency_list[second]:
+            self.__adjacency_list[first].remove(second)
+            self.__adjacency_list[second].remove(first)
 
-        self.__edge_count -= 1
+            self.__edge_count -= 1
 
     def is_adjacent(self, head, tail):
-        if head in self.__adjacency_list.keys():
-            return tail in self.__adjacency_list[head]
-        return False
+        neighbors = self.__adjacency_list.get(head, [])
+        return tail in neighbors
 
     @property
     def edges(self):
@@ -40,11 +40,35 @@ class Graph:
 
         return answer
 
+    def BFS(self, source, destination):
+        queue = [source]
+        seen = {source: 0}
+
+        while len(queue) != 0:
+            top = queue.pop()
+            # print(queue)
+            # print(top)
+            for edge in self.get_neighbors(top):
+                if edge not in seen.keys():
+                    seen[edge] = seen[top] + 1
+                    # print(f'[log]: {seen[edge]}, {seen[top]}, {top}')
+                    queue.insert(0, edge)
+        # print(seen)
+        return seen.get(destination, float('-inf'))
+
     def get_neighbors(self, node):
         return self.__adjacency_list[node]
 
     def show(self):
         print(self.__adjacency_list)
+
+    def grid_complement(self, width, height):
+        complement = initialize_grid_graph(width, height)
+
+        for edge in self.edges:
+            complement.remove_edge(*edge)
+
+        return complement
 
 
 def grid_hash(width, height):
